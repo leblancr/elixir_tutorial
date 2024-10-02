@@ -82,6 +82,9 @@ IO.puts "map([1,2,3], &(&1 + 3))
 result: #{inspect(res)}\n"
 
 plus_three = &(&1 + 3)
+IO.puts "assign the prior anonymous function featuring the Capture operator to a variable
+plus_three = &(&1 + 3)"
+
 # assign Capture operator (&) to variable
 res = Enum.map([1,2,3], plus_three)
 IO.puts "map([1,2,3], plus_three)
@@ -92,7 +95,14 @@ defmodule Adding do
   def plus_three(number), do: number + 3
 end
 
-# old way, arrow function
+IO.puts "defmodule Adding do"
+IO.puts "  def plus_three(number), do: number + 3"
+IO.puts "end
+"
+IO.puts "Using the capture operator with a named function"
+IO.puts "Old way, anonymous arrow function"
+
+# old way, anonymous arrow function
 res = Enum.map([1,2,3], fn number -> Adding.plus_three(number) end)
 IO.puts "map([1,2,3], fn number -> Adding.plus_three(number) end)
 result: #{inspect(res)}\n"
@@ -101,3 +111,12 @@ result: #{inspect(res)}\n"
 res = Enum.map([1,2,3], &Adding.plus_three(&1))
 IO.puts "map([1,2,3], &Adding.plus_three(&1))
 result: #{inspect(res)}\n"
+
+# directly call the named function without explicitly capturing the variable.
+res = Enum.map([1,2,3], &Adding.plus_three/1)
+IO.puts "map([1,2,3], &Adding.plus_three/1)
+result: #{inspect(res)}\n"
+
+
+
+# The match operator performs assignment when the left side of the match includes a variable.
