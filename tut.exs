@@ -5,19 +5,51 @@ defmodule ElixirTutorial do
     Enums.enums()
     PatternMapping.pattern_mapping()
     ControlStructures.control_structures()
+
+    puts "\n***** Functions *****"
     Functions.anonymous_functions()
     Functions.pattern_patching()
+
+    puts "\n*** Named Functions ***"
     Functions.NamedFunctions.Greeter1.hello("Beau")
     Functions.NamedFunctions.Greeter2.hello("Beau")
     puts "Length.of []: #{Functions.NamedFunctions.Length.of([])}"
     puts "Length.of []: #{Functions.NamedFunctions.Length.of([1, 2, 3])}"
+
+    puts "\n*** Function Naming and Arity ***"
+    puts Functions.FunctionNamingAndArity.hello()
+    Functions.FunctionNamingAndArity.hello("Beau")
+    puts Functions.FunctionNamingAndArity.hello("Rich", "Beau")
+
+    puts "\n*** Functions and Pattern Matching ***"
+    fred = %{
+      name: "Fred",
+      age: "95",
+      favorite_color: "Taupe"
+    }
+    Functions.FunctionsAndPatternMatching.hello1(fred)
+    Functions.FunctionsAndPatternMatching.hello2(fred)
+    Functions.FunctionsAndPatternMatching.hello3(fred)
+
+    puts "\n*** Private Functions ***"
+    Functions.PrivateFunctions.hello("Beau")
+
+    puts "\n*** Guards ***"
+    Functions.Guards.Greeter.hello ["Rich", "Beau"]
+
+    puts "\n*** Default Arguments ***"
+    Functions.DefaultArguments.Greeter1.hello("Beau", "en")
+    Functions.DefaultArguments.Greeter1.hello("Beau")
+    Functions.DefaultArguments.Greeter1.hello("Beau", "es")
+    Functions.DefaultArguments.Greeter2.hello(["Rich", "Beau"])
+    Functions.DefaultArguments.Greeter2.hello(["Rich", "Beau"], "es")
   end
 end
 
 defmodule Enums do
   import ElixirTutorial, only: [puts: 1]
   def enums do
-    puts "# ***** Enum functions *****"
+    puts "***** Enum functions *****"
     # prints all the functions available in enum
     puts Enum.__info__(:functions) |>
            Enum.each(fn({function, arity}) ->
@@ -142,7 +174,7 @@ end
 defmodule PatternMapping do
   import ElixirTutorial, only: [puts: 1]
   def pattern_mapping do
-    puts "# ***** Pattern Matching *****"
+    puts "***** Pattern Matching *****"
     {:ok, value} = {:ok, "Successful!"}  # tuple matches tuple
     puts "value: #{value}\n"
     # ***** Pin *****
@@ -152,7 +184,7 @@ end
 defmodule ControlStructures do
   import ElixirTutorial, only: [puts: 1]
   def control_structures do
-    puts "# ***** Control Structures *****"
+    puts "***** Control Structures *****"
     if "Hello" do
       puts "Valid string!"
     else
@@ -175,7 +207,7 @@ defmodule ControlStructures do
     # error matches and string is assigned to variable
     result = case {:error, "Something went wrong"} do
       {:ok, result} -> result
-      {:error, reason} -> reason <> "re" # This will match now
+      {:error, reason} -> reason # This will match now
       _ -> "Catch all"
     end
     puts result
@@ -224,20 +256,19 @@ end
 defmodule Functions do
   import ElixirTutorial, only: [puts: 1]
   def anonymous_functions do
-    puts "# ***** Functions *****"
-    puts "# *** Anonymous Functions *** "
+    puts "*** Anonymous Functions *** "
     sum = fn (a, b) -> a + b end
     puts "sum = fn (a, b) -> a + b end
     sum.(2, 3): #{sum.(2, 3)}\n"
 
-    puts "# *** & Shorthand ***"
+    puts "*** & Shorthand ***"
     sum = &(&1 + &2)
     puts "sum = &(&1 + &2)
     sum.(2, 3): #{sum.(2, 3)}\n"
   end
 
   def pattern_patching do
-    puts "# *** Pattern Matching for functions ***"
+    puts "*** Pattern Matching for functions ***"
     result = 1
 
     handle_result = fn
@@ -263,7 +294,6 @@ defmodule Functions do
   end
 
   defmodule NamedFunctions do
-    puts "# *** Named Functions ***"
     defmodule Greeter1 do
       def hello(name) do
         puts("Hello, " <> name)
@@ -280,14 +310,76 @@ defmodule Functions do
     end
   end
 
+  defmodule FunctionNamingAndArity do
+    puts "*** Function Naming and Arity ***"
+    def hello(), do: "Hello, anonymous person! (hello/0)" # hello/0
+    def hello(name), do: puts "Hello, " <> name # hello/1
+    def hello(name1, name2), do: "Hello, #{name1} and #{name2}" # hello/2
+  end
 
+  defmodule FunctionsAndPatternMatching do
+    def hello1(%{name: person_name}) do
+      puts "Hello, " <> person_name
+    end
+    def hello2(%{name: person_name} = person) do
+      IO.puts "Hello, " <> person_name
+      IO.inspect person
+    end
+    def hello3(person = %{name: person_name}) do
+      IO.puts "Hello, " <> person_name
+      IO.inspect person
+    end
+  end
 
-#
-#
-#  def hello(), do: "Hello/0, anonymous person!"   # hello/0
-#  # def hello(name), do: puts "Hello, " <> name        # hello/1
-#
-#  # hello/1 with guard
+  defmodule PrivateFunctions do
+    def hello(name), do: puts phrase() <> name
+    defp phrase, do: "Hello, "
+  end
+
+  defmodule Guards do
+    defmodule Greeter do
+      def hello(names) when is_list(names) do
+        names = Enum.join(names, ", ")
+
+        hello(names)
+      end
+
+      def hello(name) when is_binary(name) do
+        puts phrase() <> name
+      end
+
+      defp phrase, do: "Hello, "
+    end
+  end
+
+  defmodule DefaultArguments do
+    defmodule Greeter1 do
+      def hello(name, language_code \\ "en") do
+        puts phrase(language_code) <> name
+      end
+
+      defp phrase("en"), do: "Hello, "
+      defp phrase("es"), do: "Hola, "
+    end
+    defmodule Greeter2 do
+      def hello(names, language_code \\ "en")
+
+      def hello(names, language_code) when is_list(names) do
+        names = Enum.join(names, ", ")
+
+        hello(names, language_code)
+      end
+
+      def hello(name, language_code) when is_binary(name) do
+        puts phrase(language_code) <> name
+      end
+
+      defp phrase("en"), do: "Hello, "
+      defp phrase("es"), do: "Hola, "
+    end
+  end
+
+  #  # hello/1 with guard
 #  def hello(name) when is_binary(name) do
 #    puts "hello/1 with guard"
 #    puts phrase() <> name
@@ -346,27 +438,6 @@ defmodule Functions do
 #    puts "Length.of [1, 2, 3] " <> Integer.to_string(of([1, 2, 3]))
 #    puts "Length.of [] #{of([])}"
 #    puts "Length.of [1, 2, 3] #{of([1, 2, 3])}"
-#
-#    puts "# *** Function Naming and Arity ***"
-#    puts hello()
-#    # puts hello("Fred")
-#    # puts hello("Fred", "Jane")
-#
-#    fred = %{
-#      name: "Fred",
-#      age: "95",
-#      favorite_color: "Taupe"
-#    }
-#
-#    hello("beau")
-#    hello1(fred)
-#    hello2(fred)
-#
-#    puts "# *** Private Functions ***"
-#    hello3("beau")
-#
-#    puts "# *** Guards ***"
-#    hellol(["rich", "beau"])
 #
 #    puts "# *** Default Arguments ***"
 #    hello("beau", "en")
