@@ -2,11 +2,27 @@ defmodule ElixirTutorial do
   def puts(message), do: IO.puts(message) # alias IO.puts
 
   def main do
+    Enums.enums()
+    PatternMapping.pattern_mapping()
+    ControlStructures.control_structures()
+    Functions.anonymous_functions()
+    Functions.pattern_patching()
+    Functions.NamedFunctions.Greeter1.hello("Beau")
+    Functions.NamedFunctions.Greeter2.hello("Beau")
+    puts "Length.of []: #{Functions.NamedFunctions.Length.of([])}"
+    puts "Length.of []: #{Functions.NamedFunctions.Length.of([1, 2, 3])}"
+  end
+end
+
+defmodule Enums do
+  import ElixirTutorial, only: [puts: 1]
+  def enums do
+    puts "# ***** Enum functions *****"
     # prints all the functions available in enum
     puts Enum.__info__(:functions) |>
-              Enum.each(fn({function, arity}) ->
-                IO.puts "#{function} / #{arity}"
-              end)
+           Enum.each(fn({function, arity}) ->
+             IO.puts "#{function} / #{arity}"
+           end)
 
     # check if all are true
     # each element in the list is sent to the function one by one
@@ -14,8 +30,8 @@ defmodule ElixirTutorial do
       String.length(s) == 3  # this is applied to each element in the list
     end)
 
-    puts "all?([\"foo\", \"bar\", \"hello\"], fn(s) ->
-      String.length(s) == 3
+    puts "\nall?([\"foo\", \"bar\", \"hello\"], fn(s) ->
+    String.length(s) == 3
     result: #{res}\n"
 
     #
@@ -31,7 +47,7 @@ defmodule ElixirTutorial do
 
     # apply a function to each item and produce a new collection
     res = Enum.map([0, 1, 2, 3], fn(x) -> x - 1 end)
-      puts "map([0, 1, 2, 3], fn(x) -> x - 1 end)
+    puts "map([0, 1, 2, 3], fn(x) -> x - 1 end)
     result: #{inspect(res)}\n"
 
     # Apply function every third item
@@ -43,12 +59,12 @@ defmodule ElixirTutorial do
 
     # minimum value in list
     res = Enum.min([5, 3, 0, -1])
-      puts "min([5, 3, 0, -1])
+    puts "min([5, 3, 0, -1])
     result: #{res}\n"
 
     # apply a function to each element
     res = Enum.filter([1, 2, 3, 4], fn(x) -> rem(x, 2) == 0 end)
-      puts "filter([1, 2, 3, 4], fn(x) -> rem(x, 2) == 0 end)
+    puts "filter([1, 2, 3, 4], fn(x) -> rem(x, 2) == 0 end)
     result: #{inspect(res)}\n"
 
     # a list and accumulater with initial value 10
@@ -71,13 +87,13 @@ defmodule ElixirTutorial do
 
     # inspect(res) converts the list into a string
     res = Enum.sort([5, 6, 1, 3, -1, 4])
-      puts "sort([5, 6, 1, 3, -1, 4])
+    puts "sort([5, 6, 1, 3, -1, 4])
     result: #{inspect(res)}\n"
 
     # old way, arrow function
     puts "Capture operator (&))"
     res = Enum.map([1,2,3], fn number -> number + 3 end)
-      puts "map([1,2,3], fn number -> number + 3 end)
+    puts "map([1,2,3], fn number -> number + 3 end)
     result: #{inspect(res)}\n"
 
     # Capture operator (&)
@@ -120,8 +136,23 @@ defmodule ElixirTutorial do
     res = Enum.map([1,2,3], &Adding.plus_three/1)
     puts "map([1,2,3], &Adding.plus_three/1)
     result: #{inspect(res)}\n"
+  end
+end
 
-    #
+defmodule PatternMapping do
+  import ElixirTutorial, only: [puts: 1]
+  def pattern_mapping do
+    puts "# ***** Pattern Matching *****"
+    {:ok, value} = {:ok, "Successful!"}  # tuple matches tuple
+    puts "value: #{value}\n"
+    # ***** Pin *****
+  end
+end
+
+defmodule ControlStructures do
+  import ElixirTutorial, only: [puts: 1]
+  def control_structures do
+    puts "# ***** Control Structures *****"
     if "Hello" do
       puts "Valid string!"
     else
@@ -187,16 +218,26 @@ defmodule ElixirTutorial do
                   {:ok, last} <- Map.fetch(user, :last),
                   do: last <> ", " <> first
     puts result
+  end
+end
 
-    # Anonymous Functions
+defmodule Functions do
+  import ElixirTutorial, only: [puts: 1]
+  def anonymous_functions do
+    puts "# ***** Functions *****"
+    puts "# *** Anonymous Functions *** "
     sum = fn (a, b) -> a + b end
     puts "sum = fn (a, b) -> a + b end
     sum.(2, 3): #{sum.(2, 3)}\n"
 
+    puts "# *** & Shorthand ***"
     sum = &(&1 + &2)
     puts "sum = &(&1 + &2)
     sum.(2, 3): #{sum.(2, 3)}\n"
+  end
 
+  def pattern_patching do
+    puts "# *** Pattern Matching for functions ***"
     result = 1
 
     handle_result = fn
@@ -206,8 +247,133 @@ defmodule ElixirTutorial do
     end
 
     some_result = 1
+    puts "some_result = 1"
+
+    puts "handle_result = fn
+      {:ok, ^result} -> puts \"Handling result (#{result})...\"
+      {:ok, _} -> puts \"This would be never run as previous will be matched beforehand.\"
+      {:error} -> puts \"An error has occurred!\"
+    end
+
+    some_result = 1
+    handle_result.({:ok, some_result})"
     puts handle_result.({:ok, some_result})
+    puts "handle_result.({:error})"
+    puts handle_result.({:error})
   end
+
+  defmodule NamedFunctions do
+    puts "# *** Named Functions ***"
+    defmodule Greeter1 do
+      def hello(name) do
+        puts("Hello, " <> name)
+      end
+    end
+
+    defmodule Greeter2 do
+      def hello(name), do: puts "Hello, " <> name
+    end
+
+    defmodule Length do
+      def of([]), do: 0
+      def of([_ | tail]), do: 1 + of(tail)
+    end
+  end
+
+
+
+#
+#
+#  def hello(), do: "Hello/0, anonymous person!"   # hello/0
+#  # def hello(name), do: puts "Hello, " <> name        # hello/1
+#
+#  # hello/1 with guard
+#  def hello(name) when is_binary(name) do
+#    puts "hello/1 with guard"
+#    puts phrase() <> name
+#  end
+#
+#  # The clause def hello(%{name: person_name}) matches any map that has
+#  # at least the key :name, regardless of additional keys.
+#  def hello1(input) do
+#    case input do
+#      # if map has this key do this
+#      %{name: person_name} ->
+#        puts "Received a map with name: #{inspect(person_name)}"
+#        puts "Hello1, " <> person_name
+#      name when is_binary(name) ->
+#        puts "Hello1, " <> name
+#      _ ->
+#        puts "Hello1, anonymous person!"
+#    end
+#  end
+#
+#  # new_person_map is a new variable from matching
+#  # 1. entire passed in map goes into new_person_map
+#  # 2. value associated with name: goes into person_name next
+#  # new_person_map = passed in map (first)
+#  # Functions pattern-match the data passed in to each of its arguments independently.
+#  def hello2(new_person_map = %{name: person_name}) do
+#    puts "Hello2, " <> person_name
+#    IO.inspect new_person_map
+#  end
+#
+#  def hello(name, language_code \\ "en") do
+#    puts phrase(language_code) <> name
+#  end
+#
+#  defp phrase("en"), do: "Hello, "
+#  defp phrase("es"), do: "Hola, "
+#
+#  def hello3(name), do: puts phrase() <> name
+#  defp phrase, do: "Hellop, "
+#
+#  def hello(name1, name2), do: "Hello/2, #{name1} and #{name2}"  # hello/2
+#
+#  def hellol(names) when is_list(names) do
+#    names = Enum.join(names, ", ")
+#    hello(names) # hello/1 with is_binary guard
+#  end
+#
+#  # recursion using named functions:
+#  def of([]), do: 0
+#  def of([_ | tail]), do: 1 + of(tail)
+#
+#  def functions do
+#    # hello("Beau")
+#
+#    puts "Length.of [] " <> Integer.to_string(of([]))
+#    puts "Length.of [1, 2, 3] " <> Integer.to_string(of([1, 2, 3]))
+#    puts "Length.of [] #{of([])}"
+#    puts "Length.of [1, 2, 3] #{of([1, 2, 3])}"
+#
+#    puts "# *** Function Naming and Arity ***"
+#    puts hello()
+#    # puts hello("Fred")
+#    # puts hello("Fred", "Jane")
+#
+#    fred = %{
+#      name: "Fred",
+#      age: "95",
+#      favorite_color: "Taupe"
+#    }
+#
+#    hello("beau")
+#    hello1(fred)
+#    hello2(fred)
+#
+#    puts "# *** Private Functions ***"
+#    hello3("beau")
+#
+#    puts "# *** Guards ***"
+#    hellol(["rich", "beau"])
+#
+#    puts "# *** Default Arguments ***"
+#    hello("beau", "en")
+#    hello("beau")
+#    hello("beau", "es")
+#  end
+
 end
 
 ElixirTutorial.main()
