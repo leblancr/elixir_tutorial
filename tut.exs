@@ -5,9 +5,9 @@ defmodule MyLogger do
 end
 
 defmodule Example.User do
-  @derive {Inspect, only: [:name]}
+  @derive {Inspect, only: [:name]} # only name included in output
   # @derive {Inspect, except: [:roles]} same
-  defstruct name: nil, roles: []
+  defstruct name: nil, roles: [] # predefined keys
 
   # Implement String.Chars protocol
   defimpl String.Chars do
@@ -371,6 +371,65 @@ defmodule ElixirTutorial do
     end
   end
 
+  defmodule Modules do
+    import MyLogger
+
+    def structs do
+      example_user = %Example.User{} # defaults
+      puts example_user
+      puts %Example.User{name: "Rich"} # One field filled in other default
+      rich = %Example.User{name: "Rich", roles: [:manager]} # both fields
+      puts rich # rich is a struct
+      sean = %{rich | name: "Sean"}  # new struct, copy with one field changed, rich still exists
+      puts sean
+      puts %{name: "Sean"} = sean # match map against struct
+      puts inspect(sean)
+    end
+
+    defmodule Composition do
+      defmodule Sayings.Greetings do
+        def basic(name), do: puts "Hi, #{name}"
+      end
+
+      defmodule Sayings.Farewells do
+        def basic(name), do: puts "By, #{name}"
+      end
+
+      # use
+      defmodule Hello do
+        defmacro __using__(opts) do
+          greeting = Keyword.get(opts, :greeting, "Hi")
+
+          quote do
+            def hello(name), do: puts unquote(greeting) <> ", " <> name
+          end
+        end
+      end
+
+      defmodule Example do
+        use Hello, greeting: "Hola"
+        alias Sayings.{Greetings, Farewells}
+        def greeting(name), do: Greetings.basic(name)
+        def farewell(name), do: Farewells.basic(name)
+
+#        # Without alias
+#        defmodule Example do
+#          def greeting(name), do: Sayings.Greetings.basic(name)
+#        end
+
+        def import_and_filtering do
+          import List
+          puts first([1, 2, 3])
+          puts last([1, 2, 3])
+        end
+
+        import List, only: :functions
+        import List, only: :macros
+      end
+
+    end
+  end
+
   def main do
     import MyLogger
     Enums.enums()
@@ -415,19 +474,21 @@ defmodule ElixirTutorial do
     Functions.DefaultArguments.Greeter2.hello(["Rich", "Beau"])
     Functions.DefaultArguments.Greeter2.hello(["Rich", "Beau"], "es")
 
-    puts "\n*** Pipe Operator ***"
+    puts "\n***** Pipe Operator *****"
     PipeOperator.examples()
 
+    puts "\n***** Modules *****"
     puts "\n*** Structs ***"
-    puts %Example.User{}
-    puts %Example.User{name: "Rich"}
-    rich = %Example.User{name: "Rich", roles: [:manager]}
-    puts rich # rich is a map
-    sean = %{rich | name: "Sean"}
-    puts sean
-    puts %{name: "Sean"} = sean # match structs against maps
-    puts inspect(sean)
+    Modules.structs()
+
+    puts "\n*** Composition ***"
+    Modules.Composition.Sayings.Greetings.basic("beau")
+    Modules.Composition.Example.greeting("beau")
+    Modules.Composition.Example.farewell("beau")
+    Modules.Composition.Example.import_and_filtering()
+    Modules.Composition.Example.hello("beau")
   end
 end
+
 
 ElixirTutorial.main()
