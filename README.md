@@ -9,9 +9,8 @@ Interactive Elixir (1.17.3) - press Ctrl+C to exit (type h() ENTER for help)
 iex(1)>
 
 compile all before running:
-elixirc *.ex
-elixirc *.ex functions/*.ex
+elixirc lib/*.ex lib/**/*.ex
 rm -f *.beam - to get rid of warnings
-elixir elixir_tutorial.ex
+elixir -pa build tut.exs # -pa option stands for "path add"
 
 

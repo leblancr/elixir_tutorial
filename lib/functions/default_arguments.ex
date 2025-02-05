@@ -1,4 +1,4 @@
-defmodule DefaultArguments do
+defmodule ElixirTutorial.DefaultArguments do
   import MyLogger
 
   defmodule Greeter1 do
